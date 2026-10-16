@@ -1,0 +1,21 @@
+{
+  "name": "Whiteboard الخاصة بي",
+  "short_name": "Whiteboard",
+  "description": "لوحة رسم وملاحظات تعمل دون إنترنت",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f1f5f9",
+  "theme_color": "#101827",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "lang": "ar",
+  "dir": "rtl"
+}

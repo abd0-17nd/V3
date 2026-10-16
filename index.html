@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101827">
+  <meta name="description" content="لوحة رسم وملاحظات تعمل دون إنترنت">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <title>Whiteboard الخاصة بي</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Whiteboard الرئيسية">
+      <div class="brand-mark">W</div>
+      <div><strong>Whiteboard</strong><small>لوحتك، أفكارك</small></div>
+    </a>
+    <div class="document-name">
+      <input id="boardName" aria-label="اسم اللوحة" value="لوحتي الأولى" maxlength="80">
+      <span id="saveStatus" role="status">جاهز</span>
+    </div>
+    <div class="top-actions">
+      <button id="newBoardBtn" class="quiet">لوحة جديدة</button>
+      <button id="exportBtn" class="primary">تصدير ملف اللوحة</button>
+      <button id="importBtn" class="quiet">استيراد لوحة</button>
+      <button id="pngBtn" class="quiet">حفظ PNG</button>
+      <input id="importFile" type="file" accept=".wboard,application/json,.json" hidden>
+    </div>
+  </header>
+
+  <main>
+    <section class="toolbar" aria-label="أدوات الرسم">
+      <div class="tool-group tools" role="group" aria-label="الأداة">
+        <button class="tool active" data-tool="pen" title="قلم (P)" aria-label="قلم">✎<span>قلم</span></button>
+        <button class="tool" data-tool="marker" title="قلم عريض (M)" aria-label="قلم عريض">▰<span>عريض</span></button>
+        <button class="tool" data-tool="highlighter" title="قلم تمييز شفاف (H)" aria-label="قلم تمييز">▨<span>تمييز</span></button>
+        <button class="tool" data-tool="eraser" title="ممحاة (E)" aria-label="ممحاة">⌫<span>ممحاة</span></button>
+        <button class="tool" data-tool="line" title="خط مستقيم (L)" aria-label="خط مستقيم">／<span>خط</span></button>
+        <button class="tool" data-tool="arrow" title="سهم (A)" aria-label="سهم">➜<span>سهم</span></button>
+        <button class="tool" data-tool="rect" title="مستطيل (R)" aria-label="مستطيل">▱<span>مستطيل</span></button>
+        <button class="tool" data-tool="circle" title="دائرة (C)" aria-label="دائرة">◯<span>دائرة</span></button>
+        <button class="tool" data-tool="text" title="إضافة نص (T)" aria-label="إضافة نص">T<span>نص</span></button>
+        <button class="tool" data-tool="image" title="إضافة صورة" aria-label="إضافة صورة">▧<span>صورة</span></button>
+        <button class="tool" data-tool="hand" title="تحريك اللوحة (Space)" aria-label="تحريك اللوحة">✋<span>تحريك</span></button>
+      </div>
+      <div class="tool-group settings">
+        <label class="setting">اللون <input id="color" type="color" value="#172033" aria-label="لون القلم"></label>
+        <label class="setting">السُمك <input id="size" type="range" min="1" max="30" value="4" aria-label="سمك القلم"><output id="sizeValue">4</output></label>
+        <label class="setting">حجم النص <select id="fontSize"><option value="16">صغير</option><option value="24" selected>متوسط</option><option value="36">كبير</option><option value="48">كبير جدًا</option></select></label>
+        <label class="setting">الخلفية
+          <select id="paper">
+            <option value="plain">بيضاء</option><option value="grid">شبكة</option><option value="dots">نقاط</option><option value="lines">سطور</option>
+          </select>
+        </label>
+      </div>
+      <div class="tool-group view-tools">
+        <button id="zoomOutBtn" class="quiet" title="تصغير">−</button>
+        <span id="zoomLabel" class="zoom-label">100%</span>
+        <button id="zoomInBtn" class="quiet" title="تكبير">+</button>
+        <button id="resetViewBtn" class="quiet">إعادة العرض</button>
+        <button id="undoBtn" class="quiet" title="تراجع (Ctrl+Z)">↶ تراجع</button>
+        <button id="redoBtn" class="quiet" title="إعادة (Ctrl+Y)">↷ إعادة</button>
+        <button id="clearBtn" class="danger">مسح اللوحة</button>
+      </div>
+    </section>
+
+    <section class="canvas-wrap" aria-label="مساحة الرسم">
+      <div id="canvasStage" class="canvas-stage">
+        <canvas id="board" aria-label="مساحة الرسم. استخدم إصبعك أو القلم أو الفأرة للرسم."></canvas>
+        <div id="emptyHint" class="empty-hint"><span>✦</span><strong>ابدأ فكرتك هنا</strong><small>اختر أداة من الشريط وابدأ الرسم، أو أضف نصًا أو صورة.</small></div>
+      </div>
+    </section>
+    <footer class="bottom-bar">
+      <span>يُحفظ عملك على هذا الجهاز تلقائيًا</span>
+      <span id="strokeCount">0 عنصر</span>
+      <span>ملف .wboard للنقل دون إنترنت · PNG للصورة</span>
+    </footer>
+  </main>
+
+  <input id="imageFile" type="file" accept="image/*" hidden>
+  <dialog id="textDialog">
+    <form method="dialog" id="textForm">
+      <h2>إضافة نص</h2>
+      <label>النص <textarea id="textValue" rows="3" maxlength="1000" placeholder="اكتب فكرتك هنا..."></textarea></label>
+      <div class="dialog-actions"><button value="cancel" class="quiet">إلغاء</button><button id="addTextBtn" value="ok" class="primary">إضافة النص</button></div>
+    </form>
+  </dialog>
+  <dialog id="confirmDialog">
+    <form method="dialog">
+      <h2>مسح اللوحة؟</h2><p>سيتم حذف كل العناصر من اللوحة الحالية. صدّر نسخة احتياطية إذا كنت تحتاج الاحتفاظ بها.</p>
+      <div class="dialog-actions"><button value="cancel" class="quiet">إلغاء</button><button id="confirmClearBtn" value="ok" class="danger">امسح اللوحة</button></div>
+    </form>
+  </dialog>
+  <dialog id="helpDialog">
+    <form method="dialog">
+      <h2>اختصارات لوحة المفاتيح</h2>
+      <ul class="shortcuts">
+        <li><kbd>P</kbd> قلم</li><li><kbd>M</kbd> قلم عريض</li><li><kbd>H</kbd> قلم تمييز</li>
+        <li><kbd>E</kbd> ممحاة</li><li><kbd>L</kbd> خط</li><li><kbd>A</kbd> سهم</li>
+        <li><kbd>R</kbd> مستطيل</li><li><kbd>C</kbd> دائرة</li><li><kbd>T</kbd> نص</li>
+        <li><kbd>Ctrl</kbd> + <kbd>Z</kbd> تراجع</li><li><kbd>Ctrl</kbd> + <kbd>Y</kbd> إعادة</li>
+        <li><kbd>Space</kbd> مع السحب لتحريك اللوحة</li>
+      </ul>
+      <div class="dialog-actions"><button value="ok" class="primary">فهمت</button></div>
+    </form>
+  </dialog>
+  <script src="./app.js"></script>
+</body>
+</html>
